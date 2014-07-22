@@ -178,13 +178,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	else
 		other_file = 0;
 
-#if defined(CONFIG_MACH_KLTE_KOR)
-#ifdef CONFIG_ZSWAP
-	if (current_is_kswapd() && other_file < lowmem_minfree[1])
-		other_free -= global_page_state(NR_FREE_CMA_PAGES);
-#endif
-#endif
-
 	if (lowmem_adj_size < array_size)
 		array_size = lowmem_adj_size;
 	if (lowmem_minfree_size < array_size)

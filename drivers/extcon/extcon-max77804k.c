@@ -914,6 +914,32 @@ void max77804k_otg_control(struct max77804k_muic_info *info, int enable)
 				__func__, int_mask, cdetctrl1, chg_cnfg_00);
 }
 
+#if defined(CONFIG_CHARGER_SMB1357)
+void max77804k_muic_only_otg_control(struct max77804k_muic_info *info, int enable)
+{
+	u8 cdetctrl1;
+	pr_info("%s: enable(%d)\n", __func__, enable);
+
+	if (enable) {
+		/* disable charger detection */
+		max77804k_read_reg(info->max77804k->muic,
+			MAX77804K_MUIC_REG_CDETCTRL1, &cdetctrl1);
+		cdetctrl1 &= ~(1 << 0);
+		max77804k_write_reg(info->max77804k->muic,
+			MAX77804K_MUIC_REG_CDETCTRL1, cdetctrl1);
+	} else {
+		/* enable charger detection */
+		max77804k_read_reg(info->max77804k->muic,
+			MAX77804K_MUIC_REG_CDETCTRL1, &cdetctrl1);
+		cdetctrl1 |= (1 << 0);
+		max77804k_write_reg(info->max77804k->muic,
+			MAX77804K_MUIC_REG_CDETCTRL1, cdetctrl1);
+	}
+
+	pr_info("%s: CDETCTRL1(0x%x)\n", __func__, cdetctrl1);
+}
+#endif
+
 void max77804k_powered_otg_control(struct max77804k_muic_info *info, int enable)
 {
 	pr_info("%s: enable(%d)\n", __func__, enable);
@@ -947,23 +973,7 @@ int muic_otg_control(int enable)
 	gInfo->otg_test = enable;
 
 #if defined(CONFIG_CHARGER_SMB1357)
-	if(enable) {
-		u8 cdetctrl1;
-		/* disable charger detection */
-		max77804k_read_reg(gInfo->max77804k->muic,
-			MAX77804K_MUIC_REG_CDETCTRL1, &cdetctrl1);
-		cdetctrl1 &= ~(1 << 0);
-		max77804k_write_reg(gInfo->max77804k->muic,
-			MAX77804K_MUIC_REG_CDETCTRL1, cdetctrl1);
-	} else {
-		u8 cdetctrl1;
-		/* enable charger detection */
-		max77804k_read_reg(gInfo->max77804k->muic,
-			MAX77804K_MUIC_REG_CDETCTRL1, &cdetctrl1);
-		cdetctrl1 |= (1 << 0);
-		max77804k_write_reg(gInfo->max77804k->muic,
-			MAX77804K_MUIC_REG_CDETCTRL1, cdetctrl1);
-	}
+	max77804k_muic_only_otg_control(gInfo, enable);
 	smb1357_otg_control(enable);
 #else
 	max77804k_otg_control(gInfo, enable);

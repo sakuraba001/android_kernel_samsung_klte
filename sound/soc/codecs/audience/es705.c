@@ -2654,8 +2654,14 @@ static int es705_put_voice_lpm_enable_value(struct snd_kcontrol *kcontrol,
 	}
 	if (es705_priv.voice_lpm_enable)
 		es705_priv.power_control(ES705_SET_POWER_STATE_VS_LOWPWR, ES705_POWER_STATE);
-	else if (es705_priv.es705_power_state == ES705_SET_POWER_STATE_VS_LOWPWR)
+	else if (es705_priv.es705_power_state == ES705_SET_POWER_STATE_VS_LOWPWR) {
 		es705_priv.power_control(ES705_SET_POWER_STATE_VS_OVERLAY, ES705_POWER_STATE);
+		if (!es705_priv.voice_wakeup_enable) {
+			es705_switch_route_config(5);
+			es705_priv.power_control(ES705_SET_POWER_STATE_NORMAL, ES705_POWER_STATE);
+			es705_read_write_power_control(0);
+		}
+	}
 
 	return 0;
 }
